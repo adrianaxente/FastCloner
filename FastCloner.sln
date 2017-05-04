@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ax.FastCloner", "Ax.FastClo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ax.FastCloner.Tests", "Ax.FastCloner.Tests\Ax.FastCloner.Tests.csproj", "{64F82CEF-81BD-4DFF-A0A1-03487DC45C68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ax.FastCloner.ConsoleTests", "Ax.FastCloner.ConsoleTests\Ax.FastCloner.ConsoleTests.csproj", "{81214E6A-552C-4B32-B289-1932078337F4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,9 +19,5 @@ Global
 		{64F82CEF-81BD-4DFF-A0A1-03487DC45C68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64F82CEF-81BD-4DFF-A0A1-03487DC45C68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64F82CEF-81BD-4DFF-A0A1-03487DC45C68}.Release|Any CPU.Build.0 = Release|Any CPU
-		{81214E6A-552C-4B32-B289-1932078337F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81214E6A-552C-4B32-B289-1932078337F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81214E6A-552C-4B32-B289-1932078337F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81214E6A-552C-4B32-B289-1932078337F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
