@@ -7,14 +7,8 @@ namespace Ax.FastCloner
 
         private static readonly Lazy<ClonerConfiguration> _defaultConfiguration =
             new Lazy<ClonerConfiguration>(
-                () => BuildDefaultConfiguration(),
+                () => new FieldClonerConfiguration(),
                 true);
-
-        #endregion
-
-        #region Private Fields
-
-        private readonly ClonerConfiguration _configuration;
 
         #endregion
 
@@ -22,7 +16,7 @@ namespace Ax.FastCloner
 
         public Cloner(ClonerConfiguration configuration = null)
         {
-            this._configuration =
+            this.Configuration =
                 configuration ??
                 _defaultConfiguration.Value;
         }
@@ -40,21 +34,22 @@ namespace Ax.FastCloner
                 return default(TInstance);
             }
 
-            var context = new ClonerContext();
+            var context = new ClonerContext(this.Configuration);
 
-            var typeCloner = _configuration.GetTypeCloner(instance);
-            var clonedInstance = typeCloner(instance, context);
+            var typeCloner = this.Configuration.GetTypeCloner(instance.GetType());
+            var clonedInstance = typeCloner.Clone(null, instance, context);
 
             return (TInstance)clonedInstance;
         }
 
         #endregion
 
-        #region Private Static Members
+        #region Public Properties
 
-        private static ClonerConfiguration BuildDefaultConfiguration()
+        public ClonerConfiguration Configuration
         {
-            throw new NotImplementedException();
+            get;
+            private set;
         }
 
         #endregion

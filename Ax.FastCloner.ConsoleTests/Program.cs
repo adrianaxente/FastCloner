@@ -6,7 +6,22 @@ namespace Ax.FastCloner.ConsoleTests
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var cloner = new Cloner(new FieldClonerConfiguration());
+            var person = new Person
+            {
+                Name = "Albert Einstein",
+                Age = 120
+            };
+
+            var clonedPerson = cloner.Clone(person);
+
+
         }
+    }
+
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
     }
 }

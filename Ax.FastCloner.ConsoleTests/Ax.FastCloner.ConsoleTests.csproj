@@ -33,5 +33,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ax.FastCloner\Ax.FastCloner.csproj">
+      <Project>{FEAA5B35-C882-4817-A61F-3E4038C49866}</Project>
+      <Name>Ax.FastCloner</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

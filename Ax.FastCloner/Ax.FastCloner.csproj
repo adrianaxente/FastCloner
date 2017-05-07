@@ -35,6 +35,8 @@
     <Compile Include="ClonerConfiguration.cs" />
     <Compile Include="ClonerContext.cs" />
     <Compile Include="TypeCloner.cs" />
+    <Compile Include="FieldClonerConfiguration.cs" />
+    <Compile Include="ObjectMemberTuple.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
