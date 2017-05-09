@@ -31,7 +31,7 @@ namespace Ax.FastCloner
 
         #region Public Methods
 
-        public virtual object Clone(string memberName, object instance, ClonerContext context)
+        public object Clone(string memberName, object instance, ClonerContext context)
         {
             if (instance == null)
             {
