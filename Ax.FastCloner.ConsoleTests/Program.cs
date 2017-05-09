@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Ax.FastCloner.ConsoleTests
 {
@@ -15,7 +16,9 @@ namespace Ax.FastCloner.ConsoleTests
                 {
                     Street = "4th St",
                     Number = "500 E"
-                }
+                },
+
+                PhoneNumbers = new string[] { "123456789", "987654321" } 
             };
 
             var clonedPerson = cloner.Clone(person);
@@ -29,6 +32,7 @@ namespace Ax.FastCloner.ConsoleTests
         public string Name { get; set; }
         public int Age { get; set; }
         public Address Address { get; set; }
+        public string[] PhoneNumbers { get; set; }
     }
 
     public class Address 
