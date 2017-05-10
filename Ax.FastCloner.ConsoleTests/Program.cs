@@ -24,6 +24,9 @@ namespace Ax.FastCloner.ConsoleTests
             person.Self = person;
 
             var clonedPerson = cloner.Clone(person);
+
+            var stringObj = "Test String";
+            var clonedStringObj = cloner.Clone(stringObj);
         }
     }
 
