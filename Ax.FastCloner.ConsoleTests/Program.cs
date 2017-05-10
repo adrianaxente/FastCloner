@@ -21,9 +21,9 @@ namespace Ax.FastCloner.ConsoleTests
                 PhoneNumbers = new string[] { "123456789", "987654321" } 
             };
 
+            person.Self = person;
+
             var clonedPerson = cloner.Clone(person);
-
-
         }
     }
 
@@ -33,6 +33,8 @@ namespace Ax.FastCloner.ConsoleTests
         public int Age { get; set; }
         public Address Address { get; set; }
         public string[] PhoneNumbers { get; set; }
+
+        public Person Self { get; set; }
     }
 
     public class Address 

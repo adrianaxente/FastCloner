@@ -1,27 +1,43 @@
 ﻿using System;
 namespace Ax.FastCloner
 {
-    public delegate object TypeClonerDelegate(object instace, ClonerContext context);
 
     public class TypeCloner
     {
+        public delegate object CreateDelegate(object instace, ClonerContext context);
+        public delegate void CopyDelegate(object instance, object copyInstance, ClonerContext context);
+
         #region Properties
 
-        public TypeCloner(TypeClonerDelegate clonerDelegate)
+        public TypeCloner(
+            CreateDelegate creatorDelegate,
+            CopyDelegate copierDelegate)
         {
-            if (clonerDelegate == null)
+            if (creatorDelegate == null)
             {
-                throw new ArgumentNullException(nameof(clonerDelegate));
+                throw new ArgumentNullException(nameof(creatorDelegate));
             }
 
-            this.ClonerDelegate = clonerDelegate;
+            if (copierDelegate == null)
+            {
+                throw new ArgumentNullException(nameof(copierDelegate));
+            }
+
+            this.CreatorDelegate = creatorDelegate;
+            this.CopierDelegate = copierDelegate;
         }
 
         #endregion
 
         #region Properties
 
-        public TypeClonerDelegate ClonerDelegate
+        public CreateDelegate CreatorDelegate
+        {
+            get;
+            private set;
+        }
+
+        public CopyDelegate CopierDelegate
         {
             get;
             private set;
@@ -47,9 +63,11 @@ namespace Ax.FastCloner
                     context.PathStack.Push(memberName);
                 }
 
-                result = ClonerDelegate(instance, context);
+                result = CreatorDelegate(instance, context);
 
                 context.VisitedDictionary[instance] = result;
+
+                CopierDelegate(instance, result, context);
 
                 if (!string.IsNullOrEmpty(memberName))
                 {

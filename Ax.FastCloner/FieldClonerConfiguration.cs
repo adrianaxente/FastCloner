@@ -28,6 +28,22 @@ namespace Ax.FastCloner
 
         protected override TypeCloner BuildTypeCloner(Type type)
         {
+            var creatorDelegate = GetCreatorDelegate(type);
+            var copierDelegate = GetCopierDelegate(type);
+            return new TypeCloner(creatorDelegate, copierDelegate);
+        }
+
+        #endregion
+
+        #region Private Members
+
+        private TypeCloner.CreateDelegate GetCreatorDelegate(Type type)
+        {
+            return (instance, context) => FormatterServices.GetUninitializedObject(type); 
+        }
+
+        private TypeCloner.CopyDelegate GetCopierDelegate(Type type)
+        {
             var fieldsToClone =
                 type.GetFields(
                     BindingFlags.Instance |
@@ -38,7 +54,10 @@ namespace Ax.FastCloner
             var instanceParameterExpression =
                 Expression.Parameter(typeof(object), "instance");
 
-            var contextParameterExpression = 
+            var copyInstanceParameterExpression =
+                Expression.Parameter(typeof(object), "copyInstance");
+
+            var contextParameterExpression =
                 Expression.Parameter(typeof(ClonerContext), "context");
 
             var typedInstanceVariableExpression =
@@ -49,103 +68,89 @@ namespace Ax.FastCloner
                     typedInstanceVariableExpression,
                     Expression.Convert(instanceParameterExpression, type));
 
-            var clonedInstanceVariableExpression =
-                Expression.Variable(type);
+            var typedCopyInstanceVariableExpression =
+               Expression.Variable(type);
 
-            var clonedInstanceCreationExpression =
+            var typedCopyInstanceAssignExpression =
                 Expression.Assign(
-                    clonedInstanceVariableExpression,
-                    Expression.Convert(
-	                    Expression.Call(
-	                        typeof(FormatterServices)
-	                           .GetMethod(nameof(FormatterServices.GetUninitializedObject)),
-	                        Expression.Call(
-	                            instanceParameterExpression,
-                                typeof(object).GetMethod(nameof(object.GetType)))),
-                        type));
+                    typedCopyInstanceVariableExpression,
+                    Expression.Convert(copyInstanceParameterExpression, type));
 
             var bodyStataments = new List<Expression>
             {
                 typedInstanceAssignExpression,
-                clonedInstanceCreationExpression
+                typedCopyInstanceAssignExpression
             };
 
 
             var fieldCloneStatments =
                 fieldsToClone
                     .SelectMany(fi => GetFieldCloneExpressions(
-                                        fi, 
-                                        clonedInstanceVariableExpression,
-                                        typedInstanceVariableExpression, 
-                                        contextParameterExpression));                            
+                                        fi,
+                                        typedInstanceVariableExpression,
+                                        typedCopyInstanceVariableExpression,
+                                        contextParameterExpression));
 
             bodyStataments.AddRange(fieldCloneStatments);
 
-            bodyStataments.Add(clonedInstanceVariableExpression);
-
-            var bodyExpression = 
+            var bodyExpression =
                 Expression.Block(
                     new[] {
                             typedInstanceVariableExpression,
-                            clonedInstanceVariableExpression 
+                            typedCopyInstanceVariableExpression
                           },
                     bodyStataments);
 
-            var clonerDelegate =
+            return
                 Expression
-                    .Lambda<TypeClonerDelegate>(
+                    .Lambda<TypeCloner.CopyDelegate>(
                         bodyExpression,
                         instanceParameterExpression,
+                        copyInstanceParameterExpression,
                         contextParameterExpression)
                     .Compile();
-
-            return new TypeCloner(clonerDelegate);
         }
-
-        #endregion
-
-        #region Private Members
 
         private IEnumerable<Expression> GetFieldCloneExpressions(
             FieldInfo fieldInfo,
-            ParameterExpression clonedInstanceVariableExpression,
             ParameterExpression typedInstanceVariableExpression,
+            ParameterExpression typedCopyInstanceVariableExpression,
             ParameterExpression contextParameterExpresion)
         {
             if (IMMUTABLE_TYPES.Contains(fieldInfo.FieldType))
             {
                 return GetAssigmentExpressions(
                     fieldInfo,
-                    clonedInstanceVariableExpression,
-                    typedInstanceVariableExpression);
+                    typedInstanceVariableExpression,
+                    typedCopyInstanceVariableExpression);
             }
 
             if (fieldInfo.FieldType.IsArray)
             {
                 return
                     GetArrayCloneExpressions(
-					    fieldInfo,
-                        clonedInstanceVariableExpression,
+                        fieldInfo,
                         typedInstanceVariableExpression,
+                        typedCopyInstanceVariableExpression,
                         contextParameterExpresion);
             }
 
                 return
                     GetCloneExpressions(
                         fieldInfo,
-                        clonedInstanceVariableExpression,
                         typedInstanceVariableExpression,
+                        typedCopyInstanceVariableExpression,
                         contextParameterExpresion);
         }
 
         private IEnumerable<Expression> GetAssigmentExpressions(
-		    FieldInfo fieldInfo,
-            ParameterExpression clonedInstanceVariableExpression,
-			ParameterExpression typedInstanceVariableExpression)
+            FieldInfo fieldInfo,
+            ParameterExpression typedInstanceVariableExpression,
+            ParameterExpression typedCopyInstanceVariableExpression)
         {
             var leftExpression =
                 Expression
-                    .Field(clonedInstanceVariableExpression, fieldInfo);
+                    .Field(typedCopyInstanceVariableExpression, fieldInfo);
 
             var rightExpression =
                 Expression
@@ -154,10 +159,10 @@ namespace Ax.FastCloner
             yield return Expression.Assign(leftExpression, rightExpression);
         }
 
-		private IEnumerable<Expression> GetCloneExpressions(
-			FieldInfo fieldInfo,
-			ParameterExpression clonedInstanceVariableExpression,
-			ParameterExpression typedInstanceVariableExpression,
+        private IEnumerable<Expression> GetCloneExpressions(
+            FieldInfo fieldInfo,
+            ParameterExpression typedInstanceVariableExpression,
+            ParameterExpression typedCopyInstanceVariableExpression,
             ParameterExpression contextParameterExpresion)
         {
             yield return
@@ -169,7 +174,7 @@ namespace Ax.FastCloner
                         Expression.Constant(null)),
                     Expression.Assign(
                         Expression.Field(
-                            clonedInstanceVariableExpression,
+                            typedCopyInstanceVariableExpression,
                             fieldInfo),
                         Expression.Convert(
                             Expression.Call(
@@ -192,11 +197,11 @@ namespace Ax.FastCloner
                             fieldInfo.FieldType)));
         }
 
-		private IEnumerable<Expression> GetArrayCloneExpressions(
-			FieldInfo fieldInfo,
-			ParameterExpression clonedInstanceVariableExpression,
-			ParameterExpression typedInstanceVariableExpression,
-			ParameterExpression contextParameterExpresion)
+        private IEnumerable<Expression> GetArrayCloneExpressions(
+            FieldInfo fieldInfo,
+            ParameterExpression typedInstanceVariableExpression,
+            ParameterExpression typedCopyInstanceVariableExpression,
+            ParameterExpression contextParameterExpresion)
         {
             /*var instanceFieldExpression = 
                 Expression
