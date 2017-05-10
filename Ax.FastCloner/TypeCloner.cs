@@ -60,8 +60,6 @@ namespace Ax.FastCloner
             return result;
         }
 
-        public 
-
         #endregion
     }
 
