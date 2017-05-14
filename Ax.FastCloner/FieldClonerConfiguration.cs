@@ -128,14 +128,6 @@ namespace Ax.FastCloner
             ParameterExpression typedCopyInstanceVariableExpression,
             ParameterExpression contextParameterExpresion)
         {
-            if (IsImutableType(fieldInfo.FieldType))
-            {
-                return GetAssigmentExpressions(
-                    fieldInfo,
-                    typedInstanceVariableExpression,
-                    typedCopyInstanceVariableExpression);
-            }
-
             if (fieldInfo.FieldType.IsArray)
             {
                 return
@@ -154,22 +146,6 @@ namespace Ax.FastCloner
                     contextParameterExpresion);
         }
 
-        private IEnumerable<Expression> GetAssigmentExpressions(
-            FieldInfo fieldInfo,
-            ParameterExpression typedInstanceVariableExpression,
-            ParameterExpression typedCopyInstanceVariableExpression)
-        {
-            var leftExpression =
-                Expression
-                    .Field(typedCopyInstanceVariableExpression, fieldInfo);
-
-            var rightExpression =
-                Expression
-                    .Field(typedInstanceVariableExpression, fieldInfo);
-
-            yield return Expression.Assign(leftExpression, rightExpression);
-        }
-
         private IEnumerable<Expression> GetCloneExpressions(
             FieldInfo fieldInfo,
             ParameterExpression typedInstanceVariableExpression,
@@ -177,13 +153,7 @@ namespace Ax.FastCloner
             ParameterExpression contextParameterExpresion)
         {
             yield return
-                Expression.IfThen(
-                    Expression.NotEqual(
-                        Expression.Field(
-                            typedInstanceVariableExpression,
-                            fieldInfo),
-                        Expression.Constant(null)),
-                    Expression.Assign(
+                Expression.Assign(
                         Expression.Field(
                             typedCopyInstanceVariableExpression,
                             fieldInfo),
@@ -201,11 +171,13 @@ namespace Ax.FastCloner
                                         typeof(object).GetMethod(nameof(object.GetType)))),
                                 typeof(TypeCloner).GetMethod(nameof(TypeCloner.Clone)),
                                 Expression.Constant(fieldInfo.Name),
-                                Expression.Field(
-                                    typedInstanceVariableExpression,
-                                    fieldInfo),
+                                Expression.Convert(
+                                    Expression.Field(
+                                        typedInstanceVariableExpression,
+                                        fieldInfo),
+                                    typeof(object)),
                                 contextParameterExpresion),
-                            fieldInfo.FieldType)));
+                        fieldInfo.FieldType));
         }
 
         private IEnumerable<Expression> GetArrayCloneExpressions(

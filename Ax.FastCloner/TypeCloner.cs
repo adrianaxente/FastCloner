@@ -60,10 +60,9 @@ namespace Ax.FastCloner
 
                 result = CreatorDelegate(instance, context);
 
-                context.VisitedDictionary[instance] = result;
-
                 if (CopierDelegate != null)
                 {
+                    context.VisitedDictionary[instance] = result;
                     CopierDelegate(instance, result, context);
                 }
 
