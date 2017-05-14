@@ -30,6 +30,7 @@ namespace Ax.FastCloner
         {
             var creatorDelegate = GetCreatorDelegate(type);
             var copierDelegate = GetCopierDelegate(type);
+
             return new TypeCloner(creatorDelegate, copierDelegate);
         }
 
@@ -39,11 +40,21 @@ namespace Ax.FastCloner
 
         private TypeCloner.CreateDelegate GetCreatorDelegate(Type type)
         {
-            return (instance, context) => FormatterServices.GetUninitializedObject(type); 
+            return
+                IsImutableType(type)
+                    ? new TypeCloner.CreateDelegate(
+                        (instance, context) => instance) 
+                    : new TypeCloner.CreateDelegate(
+                        (instance, context) => FormatterServices.GetUninitializedObject(instance.GetType())); 
         }
 
         private TypeCloner.CopyDelegate GetCopierDelegate(Type type)
         {
+            if (IsImutableType(type))
+            {
+                return null;
+            }
+
             var fieldsToClone =
                 type.GetFields(
                     BindingFlags.Instance |
@@ -117,7 +128,7 @@ namespace Ax.FastCloner
             ParameterExpression typedCopyInstanceVariableExpression,
             ParameterExpression contextParameterExpresion)
         {
-            if (IMMUTABLE_TYPES.Contains(fieldInfo.FieldType))
+            if (IsImutableType(fieldInfo.FieldType))
             {
                 return GetAssigmentExpressions(
                     fieldInfo,
@@ -135,12 +146,12 @@ namespace Ax.FastCloner
                         contextParameterExpresion);
             }
 
-                return
-                    GetCloneExpressions(
-                        fieldInfo,
-                        typedInstanceVariableExpression,
-                        typedCopyInstanceVariableExpression,
-                        contextParameterExpresion);
+            return
+                GetCloneExpressions(
+                    fieldInfo,
+                    typedInstanceVariableExpression,
+                    typedCopyInstanceVariableExpression,
+                    contextParameterExpresion);
         }
 
         private IEnumerable<Expression> GetAssigmentExpressions(
@@ -243,6 +254,11 @@ namespace Ax.FastCloner
 
             //TODO: Finalize this method
             yield break;
+        }
+
+        private bool IsImutableType(Type type)
+        {
+            return IMMUTABLE_TYPES.Contains(type);
         }
 
         #endregion

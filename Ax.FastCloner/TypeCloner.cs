@@ -18,11 +18,6 @@ namespace Ax.FastCloner
                 throw new ArgumentNullException(nameof(creatorDelegate));
             }
 
-            if (copierDelegate == null)
-            {
-                throw new ArgumentNullException(nameof(copierDelegate));
-            }
-
             this.CreatorDelegate = creatorDelegate;
             this.CopierDelegate = copierDelegate;
         }
@@ -67,7 +62,10 @@ namespace Ax.FastCloner
 
                 context.VisitedDictionary[instance] = result;
 
-                CopierDelegate(instance, result, context);
+                if (CopierDelegate != null)
+                {
+                    CopierDelegate(instance, result, context);
+                }
 
                 if (!string.IsNullOrEmpty(memberName))
                 {
