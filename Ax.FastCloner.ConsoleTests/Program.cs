@@ -21,8 +21,10 @@ namespace Ax.FastCloner.ConsoleTests
                 PhoneNumbers = new string[] { "123456789", "987654321" } 
             };
 
-            person.Self = person;
+            var stringArray = new string[] { "one", "two", "three" };
+            var clonedstringArray = cloner.Clone(stringArray);
 
+            person.Self = person;
             var clonedPerson = cloner.Clone(person);
 
             var stringObj = "Test String";
